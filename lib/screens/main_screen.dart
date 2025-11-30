@@ -135,7 +135,7 @@ class _GreetingBanner extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: const EdgeInsets.fromLTRB(24.0, 0,0,0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -172,22 +172,6 @@ class _GreetingBanner extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-          ),
-          const Positioned(
-            right: 30,
-            top: 40,
-            child: Text(
-              '🐠',
-              style: TextStyle(fontSize: 40),
-            ),
-          ),
-          const Positioned(
-            right: 80,
-            bottom: 50,
-            child: Text(
-              '🐟',
-              style: TextStyle(fontSize: 35),
             ),
           ),
         ],

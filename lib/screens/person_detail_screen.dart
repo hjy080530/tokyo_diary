@@ -45,10 +45,11 @@ class PersonDetailScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  Text(
-                    '懂慌日誌',
-                    style: AppFonts.titleStyle.copyWith(
-                      fontSize: AppFonts.titleMedium,
+                  SizedBox(
+                    height: 40,
+                    child: Image.asset(
+                      'tokyo_diary_logo.png',
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ],
@@ -247,15 +248,7 @@ class _SocialIcon extends StatelessWidget {
         height: 44,
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.white,
           borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
         ),
         child: Image.asset(
           iconPath,

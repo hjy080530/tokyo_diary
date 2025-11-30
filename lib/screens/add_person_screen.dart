@@ -94,10 +94,11 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  Text(
-                    '懂慌日誌',
-                    style: AppFonts.titleStyle.copyWith(
-                      fontSize: AppFonts.titleMedium,
+                  SizedBox(
+                    height: 40,
+                    child: Image.asset(
+                      'tokyo_diary_logo.png',
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ],

@@ -48,6 +48,7 @@ class PersonCard extends StatelessWidget {
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
+        margin: const EdgeInsets.symmetric(horizontal: 24),
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
@@ -106,19 +107,19 @@ class PersonCard extends StatelessWidget {
               children: [
                 if (hasInstagram)
                   _SocialIconPlaceholder(
-                    iconPath: 'assets/icons/instagram_logo.png',
+                    iconPath: 'icons/instagram_icon.png',
                   ),
                 if (hasInstagram) const SizedBox(width: 12),
 
                 if (hasGithub)
                   _SocialIconPlaceholder(
-                    iconPath: 'assets/icons/github_icon.png',
+                    iconPath: 'icons/github_icon.png',
                   ),
                 if (hasGithub) const SizedBox(width: 12),
 
                 if (hasLink)
                   _SocialIconPlaceholder(
-                    iconPath: 'assets/icons/link_icon.png',
+                    iconPath: 'icons/link_icon.png',
                   ),
               ],
             ),
@@ -143,15 +144,7 @@ class _SocialIconPlaceholder extends StatelessWidget {
       height: 36,
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Image.asset(
         iconPath,
