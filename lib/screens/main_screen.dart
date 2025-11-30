@@ -19,12 +19,14 @@ class MainScreen extends StatelessWidget {
             // 헤더 - 타이틀
             Padding(
               padding: const EdgeInsets.all(24.0),
-              child: Text(
-                '懂慌日誌',
-                style: AppFonts.titleStyle.copyWith(
-                  fontSize: AppFonts.titleMedium,
-                ),
-              ),
+              child:
+                  SizedBox(
+                    height: 40,
+                    child: Image.asset(
+                      'tokyo_diary_logo.png',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
             ),
 
             // 인사말 배너
@@ -35,28 +37,25 @@ class MainScreen extends StatelessWidget {
             // 나의 동경대상 섹션
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                padding: EdgeInsets.zero,
                 children: [
-                  Text(
-                    '나의 동경대상',
-                    style: TextStyle(
-                      fontSize: AppFonts.bodyLarge,
-                      fontWeight: AppFonts.semiBold,
-                      color: AppColors.textPrimary,
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 0),
+                    child: Text(
+                      '나의 동경대상',
+                      style: TextStyle(
+                        fontSize: AppFonts.bodyLarge,
+                        fontWeight: AppFonts.semiBold,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                   ),
-
                   const SizedBox(height: 16),
-
-                  // 구분선
                   Container(
                     height: 2,
                     color: AppColors.primary,
                   ),
-
                   const SizedBox(height: 16),
-
-                  // 동경대상 리스트
                   const PersonCard(
                     name: '사랑하는 사람',
                     streakDays: 42,
@@ -67,9 +66,7 @@ class MainScreen extends StatelessWidget {
                     githubUrl: 'https://github.com/example',
                     linkUrl: 'https://example.com',
                   ),
-
                   const SizedBox(height: 16),
-
                   const PersonCard(
                     name: '오주현',
                     streakDays: 56,
@@ -80,14 +77,10 @@ class MainScreen extends StatelessWidget {
                     githubUrl: 'https://github.com/example2',
                     linkUrl: 'https://example2.com',
                   ),
-
                   const SizedBox(height: 40),
-
-                  // 동경인물 추가 버튼
                   Center(
                     child: _AddPersonButton(
                       onPressed: () {
-                        // AddPersonScreen으로 이동
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -97,7 +90,6 @@ class MainScreen extends StatelessWidget {
                       },
                     ),
                   ),
-
                   const SizedBox(height: 40),
                 ],
               ),
@@ -110,14 +102,15 @@ class MainScreen extends StatelessWidget {
 }
 
 class _GreetingBanner extends StatelessWidget {
+  const _GreetingBanner();
+
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
       height: 200,
-      margin: const EdgeInsets.symmetric(horizontal: 24.0),
+      margin: const EdgeInsets.symmetric(horizontal: 0),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
         color: const Color(0xFF2C3E50),
         boxShadow: [
           BoxShadow(
@@ -131,7 +124,6 @@ class _GreetingBanner extends StatelessWidget {
         children: [
           Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -182,15 +174,21 @@ class _GreetingBanner extends StatelessWidget {
               ],
             ),
           ),
-          Positioned(
+          const Positioned(
             right: 30,
             top: 40,
-            child: Text('🐠', style: TextStyle(fontSize: 40)),
+            child: Text(
+              '🐠',
+              style: TextStyle(fontSize: 40),
+            ),
           ),
-          Positioned(
+          const Positioned(
             right: 80,
             bottom: 50,
-            child: Text('🐟', style: TextStyle(fontSize: 35)),
+            child: Text(
+              '🐟',
+              style: TextStyle(fontSize: 35),
+            ),
           ),
         ],
       ),

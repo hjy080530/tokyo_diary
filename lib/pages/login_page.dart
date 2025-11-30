@@ -52,7 +52,7 @@ class LoginPage extends StatelessWidget {
                 print('Google Login pressed');
               },
               icon: Image.asset(
-                'assets/google_logo.png',
+                'google_logo.png',
                 height: 24,
                 width: 24,
               ),

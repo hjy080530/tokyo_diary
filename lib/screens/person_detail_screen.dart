@@ -107,7 +107,7 @@ class PersonDetailScreen extends StatelessWidget {
                 children: [
                   if (instagramUrl != null)
                     _SocialIcon(
-                      iconPath: 'assets/icons/instagram_logo.png',
+                      iconPath: 'icons/instagram_icon.png',
                       onTap: () {
                         print('Instagram: $instagramUrl');
                       },
@@ -116,7 +116,7 @@ class PersonDetailScreen extends StatelessWidget {
 
                   if (githubUrl != null)
                     _SocialIcon(
-                      iconPath: 'assets/icons/github_icon.png',
+                      iconPath: 'icons/github_icon.png',
                       onTap: () {
                         print('GitHub: $githubUrl');
                       },
@@ -125,7 +125,7 @@ class PersonDetailScreen extends StatelessWidget {
 
                   if (linkUrl != null)
                     _SocialIcon(
-                      iconPath: 'assets/icons/link_icon.png',
+                      iconPath: 'icons/link_icon.png',
                       onTap: () {
                         print('Link: $linkUrl');
                       },

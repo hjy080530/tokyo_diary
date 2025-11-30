@@ -4,9 +4,9 @@ import '../core/theme/colors.dart';
 import '../core/theme/fonts.dart';
 
 enum LinkType {
-  instagram('인스타그램', 'assets/icons/instagram_logo.png'),
-  github('깃허브', 'assets/icons/github_icon.png'),
-  link('링크', 'assets/icons/link_icon.png');
+  instagram('인스타그램', 'icons/instagram_icon.png'),
+  github('깃허브', 'icons/github_icon.png'),
+  link('링크', 'icons/link_icon.png');
 
   const LinkType(this.displayName, this.iconPath);
   final String displayName;
