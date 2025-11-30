@@ -33,7 +33,6 @@ class LinkTypeDropdown extends StatelessWidget {
           color: AppColors.primary,
           width: 2,
         ),
-        borderRadius: BorderRadius.circular(8),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<LinkType>(

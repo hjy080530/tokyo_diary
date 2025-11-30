@@ -190,7 +190,6 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                           foregroundColor: Colors.white,
                           elevation: 2,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
                         child: Row(
@@ -241,7 +240,6 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                   child: Text(
@@ -310,7 +308,6 @@ class _LinkInputRow extends StatelessWidget {
                 color: AppColors.primary,
                 width: 2,
               ),
-              borderRadius: BorderRadius.circular(8),
             ),
             child: TextField(
               controller: linkItem.controller,
@@ -340,14 +337,7 @@ class _LinkInputRow extends StatelessWidget {
             child: Container(
               width: 40,
               height: 56,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: AppColors.primary,
-                  width: 1,
-                ),
-              ),
+              decoration: BoxDecoration(),
               child: const Icon(
                 Icons.close,
                 color: AppColors.primary,

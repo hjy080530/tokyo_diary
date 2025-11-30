@@ -49,7 +49,6 @@ class CustomInputField extends StatelessWidget {
               color: AppColors.primary,
               width: 2,
             ),
-            borderRadius: BorderRadius.circular(8),
           ),
           child: TextField(
             controller: controller,

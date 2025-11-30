@@ -198,7 +198,6 @@ class _AddPersonButton extends StatelessWidget {
           elevation: 3,
           shadowColor: AppColors.primary.withOpacity(0.3),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
           ),
         ),
         child: Row(

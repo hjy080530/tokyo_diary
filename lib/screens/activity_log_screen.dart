@@ -187,9 +187,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                    shape: RoundedRectangleBorder()
                   ),
                   child: Text(
                     '오늘의 일기 추가',

@@ -179,8 +179,9 @@ class PersonDetailScreen extends StatelessWidget {
 
             // 구분선
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              padding: EdgeInsets.zero,
               child: Container(
+                width: double.infinity,
                 height: 2,
                 color: AppColors.primary,
               ),
@@ -191,7 +192,7 @@ class PersonDetailScreen extends StatelessWidget {
             // 관찰일지 리스트
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                padding: EdgeInsets.zero,
                 children: const [
                   ObservationCard(
                     title: '사랑하는 사람',
@@ -326,9 +327,7 @@ class _AddActivityLogButton extends StatelessWidget {
           foregroundColor: Colors.white,
           elevation: 3,
           shadowColor: AppColors.primary.withOpacity(0.3),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
