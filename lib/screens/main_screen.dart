@@ -1,8 +1,9 @@
-// lib/screens/main_screen.dart
+// lib/screens/main_screen.dart 업데이트 (동경인물 추가 버튼 연결)
 import 'package:flutter/material.dart';
 import '../core/theme/colors.dart';
 import '../core/theme/fonts.dart';
 import '../widgets/person_card.dart';
+import 'add_person_screen.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
@@ -58,18 +59,26 @@ class MainScreen extends StatelessWidget {
                   // 동경대상 리스트
                   const PersonCard(
                     name: '사랑하는 사람',
+                    streakDays: 42,
                     hasInstagram: true,
                     hasGithub: true,
                     hasLink: true,
+                    instagramUrl: 'https://instagram.com/example',
+                    githubUrl: 'https://github.com/example',
+                    linkUrl: 'https://example.com',
                   ),
 
                   const SizedBox(height: 16),
 
                   const PersonCard(
                     name: '오주현',
+                    streakDays: 56,
                     hasInstagram: true,
                     hasGithub: true,
                     hasLink: true,
+                    instagramUrl: 'https://instagram.com/example2',
+                    githubUrl: 'https://github.com/example2',
+                    linkUrl: 'https://example2.com',
                   ),
 
                   const SizedBox(height: 40),
@@ -78,8 +87,13 @@ class MainScreen extends StatelessWidget {
                   Center(
                     child: _AddPersonButton(
                       onPressed: () {
-                        // TODO: 동경인물 추가 로직
-                        print('동경인물 추가 버튼 클릭');
+                        // AddPersonScreen으로 이동
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AddPersonScreen(),
+                          ),
+                        );
                       },
                     ),
                   ),
@@ -104,10 +118,7 @@ class _GreetingBanner extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 24.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        image: const DecorationImage(
-          image: AssetImage('assets/images/aquarium_bg.jpg'), // 추후 추가
-          fit: BoxFit.cover,
-        ),
+        color: const Color(0xFF2C3E50),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -118,7 +129,6 @@ class _GreetingBanner extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          // 어두운 오버레이
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
@@ -132,8 +142,6 @@ class _GreetingBanner extends StatelessWidget {
               ),
             ),
           ),
-
-          // 텍스트 콘텐츠
           Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
@@ -174,23 +182,15 @@ class _GreetingBanner extends StatelessWidget {
               ],
             ),
           ),
-
-          // 물고기 이모지들 (추후 실제 이미지로 교체 가능)
           Positioned(
             right: 30,
             top: 40,
-            child: Text(
-              '🐠',
-              style: TextStyle(fontSize: 40),
-            ),
+            child: Text('🐠', style: TextStyle(fontSize: 40)),
           ),
           Positioned(
             right: 80,
             bottom: 50,
-            child: Text(
-              '🐟',
-              style: TextStyle(fontSize: 35),
-            ),
+            child: Text('🐟', style: TextStyle(fontSize: 35)),
           ),
         ],
       ),
