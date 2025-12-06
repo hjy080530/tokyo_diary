@@ -12,6 +12,7 @@ class CustomInputField extends StatelessWidget {
   final TextInputType? keyboardType;
   final bool readOnly;
   final VoidCallback? onTap;
+  final bool obscureText;
 
   const CustomInputField({
     super.key,
@@ -23,6 +24,7 @@ class CustomInputField extends StatelessWidget {
     this.keyboardType,
     this.readOnly = false,
     this.onTap,
+    this.obscureText = false,
   });
 
   @override
@@ -57,6 +59,7 @@ class CustomInputField extends StatelessWidget {
             keyboardType: keyboardType,
             readOnly: readOnly,
             onTap: onTap,
+            obscureText: obscureText,
             style: TextStyle(
               fontSize: AppFonts.bodyMedium,
               fontWeight: AppFonts.regular,

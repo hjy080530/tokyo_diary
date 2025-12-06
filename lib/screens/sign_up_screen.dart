@@ -1,90 +1,118 @@
-// lib/screens/login_screen.dart
+// lib/screens/sign_up_screen.dart
 import 'package:flutter/material.dart';
 
 import '../core/theme/colors.dart';
 import '../core/theme/fonts.dart';
 import '../services/mongo_service.dart';
 import '../widgets/custom_input_field.dart';
-import 'main_screen.dart';
-import 'sign_up_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignUpScreenState extends State<SignUpScreen> {
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+
   bool _isLoading = false;
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  Future<void> _login() async {
+  Future<void> _signUp() async {
+    final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
-      _showMessage('이메일과 비밀번호를 입력해 주세요.');
+    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+      _showMessage('모든 필드를 입력해 주세요.');
+      return;
+    }
+
+    if (password != confirmPassword) {
+      _showMessage('비밀번호가 일치하지 않습니다.');
       return;
     }
 
     setState(() => _isLoading = true);
     try {
-      final user = await mongoService.loginWithEmail(email, password);
-      if (user == null) {
-        _showMessage('이메일 또는 비밀번호가 올바르지 않습니다.');
+      final result = await mongoService.createUser(
+        name: name,
+        email: email,
+        password: password,
+      );
+
+      if (result == null) {
+        _showMessage('이미 가입된 이메일입니다.');
         return;
       }
 
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const MainScreen(),
-        ),
-      );
+      _showMessage('회원가입이 완료되었습니다. 로그인해 주세요.');
+      if (mounted) Navigator.pop(context);
     } catch (e) {
-      debugPrint('로그인 오류: $e');
-      _showMessage('로그인 중 오류: $e');
+      debugPrint('회원가입 오류: $e');
+      _showMessage('회원가입에 실패했습니다: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  void _showMessage(String message) {
+  void _showMessage(String text) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+        .showSnackBar(SnackBar(content: Text(text)));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          '회원가입',
+          style: TextStyle(
+            fontSize: AppFonts.bodyLarge,
+            fontWeight: AppFonts.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 60),
-              Text(
-                '懂慌日誌',
-                style: AppFonts.titleStyle,
+              CustomInputField(
+                label: '이름',
+                controller: _nameController,
+                placeholder: '이름을 입력해 주세요',
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 16),
               CustomInputField(
                 label: '이메일',
                 controller: _emailController,
-                placeholder: 'example@email.com',
                 keyboardType: TextInputType.emailAddress,
+                placeholder: 'example@email.com',
               ),
               const SizedBox(height: 16),
               CustomInputField(
@@ -93,12 +121,19 @@ class _LoginScreenState extends State<LoginScreen> {
                 placeholder: '비밀번호를 입력해 주세요',
                 obscureText: true,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+              CustomInputField(
+                label: '비밀번호 확인',
+                controller: _confirmPasswordController,
+                placeholder: '비밀번호를 다시 입력해 주세요',
+                obscureText: true,
+              ),
+              const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _login,
+                  onPressed: _isLoading ? null : _signUp,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
@@ -117,33 +152,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         )
                       : Text(
-                          '로그인',
+                          '회원가입 완료',
                           style: TextStyle(
                             fontSize: AppFonts.bodyMedium,
                             fontWeight: AppFonts.semiBold,
                           ),
                         ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Center(
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const SignUpScreen(),
-                      ),
-                    );
-                  },
-                  child: Text(
-                    '계정이 없으신가요? 회원가입',
-                    style: TextStyle(
-                      fontSize: AppFonts.bodySmall,
-                      fontWeight: AppFonts.medium,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
                 ),
               ),
             ],

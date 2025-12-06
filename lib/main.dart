@@ -3,10 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'screens/login_screen.dart';
 import 'screens/main_screen.dart';
+import 'services/mongo_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: '.env');
+  try {
+    await mongoService.connect();
+  } catch (e) {
+    debugPrint('Mongo init failed: $e');
+  }
   runApp(const MyApp());
 }
 
@@ -22,9 +28,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'NotoSansKR',
       ),
-      // 테스트용으로 MainScreen을 홈으로 설정 (나중에 LoginScreen으로 변경)
-      home: const MainScreen(),
-      // home: const LoginScreen(),
+      home: const LoginScreen(),
     );
   }
 }
