@@ -17,6 +17,10 @@ class ObservationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dateLabel = date != null
+        ? '${date!.year}.${date!.month.toString().padLeft(2, '0')}.${date!.day.toString().padLeft(2, '0')}'
+        : null;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -31,7 +35,17 @@ class ObservationCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 제목
+          if (dateLabel != null) ...[
+            Text(
+              dateLabel,
+              style: TextStyle(
+                fontSize: AppFonts.bodySmall,
+                fontWeight: AppFonts.medium,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 4),
+          ],
           Text(
             title,
             style: TextStyle(
@@ -40,10 +54,7 @@ class ObservationCard extends StatelessWidget {
               color: AppColors.textPrimary,
             ),
           ),
-
           const SizedBox(height: 8),
-
-          // 내용
           Text(
             content,
             style: TextStyle(

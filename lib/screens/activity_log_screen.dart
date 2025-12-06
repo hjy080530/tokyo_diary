@@ -1,15 +1,22 @@
 // lib/screens/activity_log_screen.dart
 import 'package:flutter/material.dart';
+import 'package:mongo_dart/mongo_dart.dart' show ObjectId;
+
 import '../core/theme/colors.dart';
 import '../core/theme/fonts.dart';
+import '../services/mongo_service.dart';
 import '../widgets/custom_input_field.dart';
 
 class ActivityLogScreen extends StatefulWidget {
   final String personName;
+  final ObjectId adoredPersonId;
+  final ObjectId userId;
 
   const ActivityLogScreen({
     super.key,
     required this.personName,
+    required this.adoredPersonId,
+    required this.userId,
   });
 
   @override
@@ -21,15 +28,13 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
   final TextEditingController _activityController = TextEditingController();
   final TextEditingController _thoughtsController = TextEditingController();
   final TextEditingController _tagsController = TextEditingController();
+  DateTime _selectedDate = DateTime.now();
+  bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    // 기본 날짜 설정
-    _dateController.text = '11/13';
-    _activityController.text = '11/13';
-    _thoughtsController.text = '11/13';
-    _tagsController.text = '#오늘';
+    _dateController.text = _formatDate(_selectedDate);
   }
 
   @override
@@ -44,7 +49,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
   Future<void> _selectDate() async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: _selectedDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
       builder: (context, child) {
@@ -63,20 +68,57 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
 
     if (picked != null) {
       setState(() {
-        _dateController.text = '${picked.month}/${picked.day}';
+        _selectedDate = picked;
+        _dateController.text = _formatDate(_selectedDate);
       });
     }
   }
 
-  void _saveActivityLog() {
-    // TODO: 활동일지 저장 로직
-    print('날짜: ${_dateController.text}');
-    print('오늘의 활동: ${_activityController.text}');
-    print('내 생각: ${_thoughtsController.text}');
-    print('태그: ${_tagsController.text}');
+  String _formatDate(DateTime date) {
+    final mm = date.month.toString().padLeft(2, '0');
+    final dd = date.day.toString().padLeft(2, '0');
+    return '${date.year}-$mm-$dd';
+  }
 
-    // 저장 후 이전 화면으로 돌아가기
-    Navigator.pop(context);
+  List<String> _parseTags(String input) {
+    return input
+        .split(RegExp(r'[ ,#]+'))
+        .where((tag) => tag.trim().isNotEmpty)
+        .map((tag) => '#$tag')
+        .toList();
+  }
+
+  void _showMessage(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  }
+
+  Future<void> _saveActivityLog() async {
+    final activity = _activityController.text.trim();
+    final thoughts = _thoughtsController.text.trim();
+    final tags = _parseTags(_tagsController.text.trim());
+
+    if (activity.isEmpty || thoughts.isEmpty) {
+      _showMessage('활동과 생각을 모두 입력해 주세요.');
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    try {
+      await mongoService.createObservationLog(
+        userId: widget.userId,
+        adoredPersonId: widget.adoredPersonId,
+        date: _selectedDate,
+        activity: activity,
+        thoughts: thoughts,
+        tags: tags,
+      );
+      if (!mounted) return;
+      Navigator.pop(context, true);
+    } catch (e) {
+      _showMessage('저장 실패: $e');
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   @override
@@ -178,27 +220,36 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
             // 저장 버튼
             Padding(
               padding: const EdgeInsets.all(24.0),
-              child: SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _saveActivityLog,
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                  onPressed: _isSaving ? null : _saveActivityLog,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder()
                   ),
-                  child: Text(
-                    '오늘의 일기 추가',
-                    style: TextStyle(
-                      fontSize: AppFonts.bodyLarge,
-                      fontWeight: AppFonts.semiBold,
-                    ),
+                  child: _isSaving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation(Colors.white),
+                          ),
+                        )
+                      : Text(
+                          '오늘의 일기 추가',
+                          style: TextStyle(
+                            fontSize: AppFonts.bodyLarge,
+                            fontWeight: AppFonts.semiBold,
+                          ),
+                        ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ),
