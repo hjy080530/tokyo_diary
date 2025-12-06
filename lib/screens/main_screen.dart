@@ -1,4 +1,6 @@
 // lib/screens/main_screen.dart 업데이트 (동경인물 추가 버튼 연결)
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../core/theme/colors.dart';
 import '../core/theme/fonts.dart';
@@ -32,7 +34,7 @@ class MainScreen extends StatelessWidget {
             // 인사말 배너
             _GreetingBanner(),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 140),
 
             // 나의 동경대상 섹션
             Expanded(
@@ -40,7 +42,7 @@ class MainScreen extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 children: [
                   const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 0),
+                    padding: EdgeInsets.symmetric(horizontal: 24.0),
                     child: Text(
                       '나의 동경대상',
                       style: TextStyle(
@@ -52,6 +54,7 @@ class MainScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Container(
+                    width: double.infinity,
                     height: 2,
                     color: AppColors.primary,
                   ),
@@ -101,80 +104,127 @@ class MainScreen extends StatelessWidget {
   }
 }
 
-class _GreetingBanner extends StatelessWidget {
+class _GreetingBanner extends StatefulWidget {
   const _GreetingBanner();
 
   @override
+  State<_GreetingBanner> createState() => _GreetingBannerState();
+}
+
+class _GreetingBannerState extends State<_GreetingBanner> {
+  final PageController _pageController = PageController();
+  final List<String> _backgrounds =
+      List.generate(5, (index) => 'backgrounds/${index + 1}.png');
+  Timer? _timer;
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (!mounted) return;
+      _currentPage = (_currentPage + 1) % _backgrounds.length;
+      _pageController.animateToPage(
+        _currentPage,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
-      height: 200,
-      margin: const EdgeInsets.symmetric(horizontal: 0),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2C3E50),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withOpacity(0.3),
-                  Colors.black.withOpacity(0.5),
-                ],
+      height: 150,
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF2C3E50),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ClipRect(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              PageView.builder(
+                controller: _pageController,
+                itemCount: _backgrounds.length,
+                physics: const NeverScrollableScrollPhysics(),
+                itemBuilder: (context, index) {
+                  return Image.asset(
+                    _backgrounds[index],
+                    fit: BoxFit.cover,
+                  );
+                },
               ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24.0, 0,0,0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '안녕하세요, 지영님!',
-                  style: TextStyle(
-                    fontSize: AppFonts.bodyLarge,
-                    fontWeight: AppFonts.bold,
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.5),
-                        offset: const Offset(0, 2),
-                        blurRadius: 4,
-                      ),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.3),
+                      Colors.black.withOpacity(0.5),
                     ],
                   ),
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  '오늘의 ***님의 활동이 궁금하지 않으세요?',
-                  style: TextStyle(
-                    fontSize: AppFonts.bodyMedium,
-                    fontWeight: AppFonts.medium,
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.5),
-                        offset: const Offset(0, 2),
-                        blurRadius: 4,
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24.0, 0, 0, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '안녕하세요, 지영님!',
+                      style: TextStyle(
+                        fontSize: AppFonts.bodyLarge,
+                        fontWeight: AppFonts.bold,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withOpacity(0.5),
+                            offset: const Offset(0, 2),
+                            blurRadius: 4,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      '오늘의 ***님의 활동이 궁금하지 않으세요?',
+                      style: TextStyle(
+                        fontSize: AppFonts.bodyMedium,
+                        fontWeight: AppFonts.medium,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withOpacity(0.5),
+                            offset: const Offset(0, 2),
+                            blurRadius: 4,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
