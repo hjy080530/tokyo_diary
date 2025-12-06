@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'screens/login_screen.dart';
 import 'screens/main_screen.dart';
 import 'services/mongo_service.dart';
+import 'services/notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,6 +14,7 @@ Future<void> main() async {
   } catch (e) {
     debugPrint('Mongo init failed: $e');
   }
+  await notificationService.init();
   runApp(const MyApp());
 }
 

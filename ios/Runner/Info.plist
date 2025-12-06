@@ -45,5 +45,7 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSUserNotificationUsageDescription</key>
+	<string>동경인의 활동 알림을 전송하기 위해 필요합니다.</string>
 </dict>
 </plist>

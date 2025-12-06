@@ -10,6 +10,7 @@ import '../services/mongo_service.dart';
 import '../widgets/person_card.dart';
 import 'add_person_screen.dart';
 import 'person_detail_screen.dart';
+import 'reminder_overview_screen.dart';
 
 class MainScreen extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -79,17 +80,41 @@ class _MainScreenState extends State<MainScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 헤더 - 타이틀
+            // 헤더 - 타이틀 + 알람 아이콘
             Padding(
               padding: const EdgeInsets.all(24.0),
-              child:
-                  SizedBox(
-                    height: 40,
-                    child: Image.asset(
-                      'tokyo_diary_logo.png',
-                      fit: BoxFit.contain,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 40,
+                      child: Image.asset(
+                        'assets/tokyo_diary_logo.png',
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
+                  IconButton(
+                    onPressed: _userId == null
+                        ? null
+                        : () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => ReminderOverviewScreen(
+                                  userId: _userId!,
+                                ),
+                              ),
+                            );
+                          },
+                    icon: Icon(
+                      Icons.alarm,
+                      color: _userId == null
+                          ? AppColors.textSecondary
+                          : AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
             ),
 
             // 인사말 배너
@@ -212,7 +237,7 @@ class _GreetingBanner extends StatefulWidget {
 class _GreetingBannerState extends State<_GreetingBanner> {
   final PageController _pageController = PageController();
   final List<String> _backgrounds =
-      List.generate(5, (index) => 'backgrounds/${index + 1}.png');
+      List.generate(5, (index) => 'assets/backgrounds/${index + 1}.png');
   Timer? _timer;
   int _currentPage = 0;
 
