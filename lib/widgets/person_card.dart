@@ -86,19 +86,19 @@ class PersonCard extends StatelessWidget {
               children: [
                 if (socialLinks.containsKey('instagram'))
                   const _SocialIconPlaceholder(
-                    iconPath: 'icons/instagram_icon.png',
+                    iconPath: 'assets/icons/instagram_icon.png',
                   ),
                 if (socialLinks.containsKey('instagram'))
                   const SizedBox(width: 12),
                 if (socialLinks.containsKey('github'))
                   const _SocialIconPlaceholder(
-                    iconPath: 'icons/github_icon.png',
+                    iconPath: 'assets/icons/github_icon.png',
                   ),
                 if (socialLinks.containsKey('github'))
                   const SizedBox(width: 12),
                 if (socialLinks.containsKey('link'))
                   const _SocialIconPlaceholder(
-                    iconPath: 'icons/link_icon.png',
+                    iconPath: 'assets/icons/link_icon.png',
                   ),
               ],
             ),

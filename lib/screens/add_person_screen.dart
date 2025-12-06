@@ -127,7 +127,7 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                   SizedBox(
                     height: 40,
                     child: Image.asset(
-                      'tokyo_diary_logo.png',
+                      'assets/tokyo_diary_logo.png',
                       fit: BoxFit.contain,
                     ),
                   ),

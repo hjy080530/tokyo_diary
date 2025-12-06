@@ -5,6 +5,8 @@ import 'package:mongo_dart/mongo_dart.dart' show ObjectId;
 import '../core/theme/colors.dart';
 import '../core/theme/fonts.dart';
 import '../services/mongo_service.dart';
+import '../services/notification_service.dart';
+import '../services/reminder_preferences.dart';
 import '../widgets/observation_card.dart';
 import 'activity_log_screen.dart';
 
@@ -31,6 +33,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     super.initState();
     _person = widget.adoredPerson;
     _logsFuture = _loadLogs();
+    _ensureDefaultReminder();
   }
 
   Future<List<Map<String, dynamic>>> _loadLogs() {
@@ -80,6 +83,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
       setState(() {
         _person = updated;
       });
+      await _rescheduleSavedReminder();
     }
   }
 
@@ -108,10 +112,49 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     }
   }
 
+  Future<void> _ensureDefaultReminder() async {
+    final id = _person['_id'];
+    if (id is! ObjectId) return;
+    final personId = id.toHexString();
+    final settings = await ReminderPreferences.instance.load(personId);
+    if (settings.isDefault && settings.enabled) {
+      await ReminderPreferences.instance.save(
+        personId,
+        ReminderSetting(enabled: settings.enabled, time: settings.time),
+      );
+      await notificationService.scheduleDailyReminder(
+        personId: personId,
+        personName: _person['name']?.toString() ?? '이름 없음',
+        time: settings.time,
+      );
+    } else if (settings.enabled) {
+      await notificationService.scheduleDailyReminder(
+        personId: personId,
+        personName: _person['name']?.toString() ?? '이름 없음',
+        time: settings.time,
+      );
+    }
+  }
+
+  Future<void> _rescheduleSavedReminder() async {
+    final id = _person['_id'];
+    if (id is! ObjectId) return;
+    final personId = id.toHexString();
+    final settings = await ReminderPreferences.instance.load(personId);
+    if (settings.enabled) {
+      await notificationService.scheduleDailyReminder(
+        personId: personId,
+        personName: _person['name']?.toString() ?? '이름 없음',
+        time: settings.time,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final socialLinks = _socialLinkMap();
     final name = _person['name']?.toString() ?? '이름 없음';
+    final description = _person['description']?.toString();
     final profileImage = _person['profileImage'] as String?;
     final streakDays = _currentStreak();
 
@@ -138,7 +181,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                   SizedBox(
                     height: 40,
                     child: Image.asset(
-                      'tokyo_diary_logo.png',
+                      'assets/tokyo_diary_logo.png',
                       fit: BoxFit.contain,
                     ),
                   ),
@@ -176,13 +219,31 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
 
                   const SizedBox(width: 20),
 
-                  // 이름
-                  Text(
-                    name,
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: AppFonts.bold,
-                      color: AppColors.textPrimary,
+                  // 이름 및 설명
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name,
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: AppFonts.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        if (description != null && description.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            description,
+                            style: TextStyle(
+                              fontSize: AppFonts.bodyMedium,
+                              fontWeight: AppFonts.regular,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ],
@@ -198,7 +259,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                 children: [
                   if (socialLinks['instagram'] != null)
                     _SocialIcon(
-                      iconPath: 'icons/instagram_icon.png',
+                      iconPath: 'assets/icons/instagram_icon.png',
                       onTap: () => _handleLinkTap(
                         'Instagram',
                         socialLinks['instagram']!,
@@ -209,7 +270,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
 
                   if (socialLinks['github'] != null)
                     _SocialIcon(
-                      iconPath: 'icons/github_icon.png',
+                      iconPath: 'assets/icons/github_icon.png',
                       onTap: () => _handleLinkTap(
                         'GitHub',
                         socialLinks['github']!,
@@ -220,7 +281,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
 
                   if (socialLinks['link'] != null)
                     _SocialIcon(
-                      iconPath: 'icons/link_icon.png',
+                      iconPath: 'assets/icons/link_icon.png',
                       onTap: () => _handleLinkTap(
                         'Link',
                         socialLinks['link']!,

@@ -145,7 +145,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                   SizedBox(
                     height: 40,
                     child: Image.asset(
-                      'tokyo_diary_logo.png',
+                      'assets/tokyo_diary_logo.png',
                       fit: BoxFit.contain,
                     ),
                   ),
