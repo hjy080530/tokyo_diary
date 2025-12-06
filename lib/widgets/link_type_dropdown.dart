@@ -13,6 +13,19 @@ enum LinkType {
   final String iconPath;
 }
 
+extension LinkTypeKey on LinkType {
+  String get key {
+    switch (this) {
+      case LinkType.instagram:
+        return 'instagram';
+      case LinkType.github:
+        return 'github';
+      case LinkType.link:
+        return 'link';
+    }
+  }
+}
+
 class LinkTypeDropdown extends StatelessWidget {
   final LinkType selectedType;
   final ValueChanged<LinkType?> onChanged;

@@ -1,12 +1,17 @@
 // lib/screens/add_person_screen.dart
 import 'package:flutter/material.dart';
+import 'package:mongo_dart/mongo_dart.dart' show ObjectId;
+
 import '../core/theme/colors.dart';
 import '../core/theme/fonts.dart';
+import '../services/mongo_service.dart';
 import '../widgets/custom_input_field.dart';
 import '../widgets/link_type_dropdown.dart';
 
 class AddPersonScreen extends StatefulWidget {
-  const AddPersonScreen({super.key});
+  final ObjectId userId;
+
+  const AddPersonScreen({super.key, required this.userId});
 
   @override
   State<AddPersonScreen> createState() => _AddPersonScreenState();
@@ -20,16 +25,10 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
   final List<LinkItem> _links = [
     LinkItem(
       type: LinkType.link,
-      controller: TextEditingController(text: 'https://github'),
+      controller: TextEditingController(),
     ),
   ];
-
-  @override
-  void initState() {
-    super.initState();
-    _nameController.text = '캡코';
-    _descriptionController.text = '피크닉을 안좋아함';
-  }
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -61,16 +60,47 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
     }
   }
 
-  void _savePerson() {
-    // TODO: 동경인물 저장 로직
-    print('이름: ${_nameController.text}');
-    print('대상의 특징: ${_descriptionController.text}');
-    for (var i = 0; i < _links.length; i++) {
-      print('링크 ${i + 1} - ${_links[i].type.displayName}: ${_links[i].controller.text}');
+  void _showMessage(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  }
+
+  Future<void> _savePerson() async {
+    final name = _nameController.text.trim();
+    final description = _descriptionController.text.trim();
+
+    if (name.isEmpty) {
+      _showMessage('이름을 입력해 주세요.');
+      return;
     }
 
-    // 저장 후 이전 화면으로 돌아가기
-    Navigator.pop(context);
+    final socialLinks = _links
+        .map((link) {
+          final url = link.controller.text.trim();
+          if (url.isEmpty) return null;
+          return {
+            '_id': ObjectId(),
+            'type': link.type.key,
+            'url': url,
+          };
+        })
+        .whereType<Map<String, dynamic>>()
+        .toList();
+
+    setState(() => _isSaving = true);
+    try {
+      await mongoService.createAdoredPerson(
+        userId: widget.userId,
+        name: name,
+        description: description,
+        socialLinks: socialLinks,
+      );
+      if (!mounted) return;
+      Navigator.pop(context, true);
+    } catch (e) {
+      _showMessage('동경인물 추가에 실패했습니다: $e');
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   @override
@@ -234,7 +264,7 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: _savePerson,
+                  onPressed: _isSaving ? null : _savePerson,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
@@ -242,13 +272,22 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                     shape: RoundedRectangleBorder(
                     ),
                   ),
-                  child: Text(
-                    '동경인물 추가',
-                    style: TextStyle(
-                      fontSize: AppFonts.bodyLarge,
-                      fontWeight: AppFonts.semiBold,
-                    ),
-                  ),
+                  child: _isSaving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation(Colors.white),
+                          ),
+                        )
+                      : Text(
+                          '동경인물 추가',
+                          style: TextStyle(
+                            fontSize: AppFonts.bodyLarge,
+                            fontWeight: AppFonts.semiBold,
+                          ),
+                        ),
                 ),
               ),
             ),
