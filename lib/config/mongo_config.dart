@@ -1,5 +1,6 @@
 // lib/config/mongo_config.dart
-/// Default MongoDB connection string used by [MongoService].
-/// Replace `<db_username>` and `<db_password>` with your actual credentials.
-const String mongoConnectionString =
-    'mongodb+srv://<db_username>:<db_password>@yuiyui.nkjcery.mongodb.net/tokyo_diary?retryWrites=true&w=majority&appName=yuiyui';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+/// Default MongoDB connection string used by [MongoService]. Loaded from .env.
+final String mongoConnectionString =
+    dotenv.env['MONGO_CONNECTION_STRING'] ?? '';
