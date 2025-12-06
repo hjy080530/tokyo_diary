@@ -1,30 +1,120 @@
 // lib/screens/person_detail_screen.dart
 import 'package:flutter/material.dart';
+import 'package:mongo_dart/mongo_dart.dart' show ObjectId;
+
 import '../core/theme/colors.dart';
 import '../core/theme/fonts.dart';
+import '../services/mongo_service.dart';
 import '../widgets/observation_card.dart';
 import 'activity_log_screen.dart';
 
-class PersonDetailScreen extends StatelessWidget {
-  final String name;
-  final String? profileImage;
-  final int streakDays;
-  final String? instagramUrl;
-  final String? githubUrl;
-  final String? linkUrl;
+class PersonDetailScreen extends StatefulWidget {
+  final Map<String, dynamic> adoredPerson;
+  final Map<String, dynamic> user;
 
   const PersonDetailScreen({
     super.key,
-    required this.name,
-    this.profileImage,
-    required this.streakDays,
-    this.instagramUrl,
-    this.githubUrl,
-    this.linkUrl,
+    required this.adoredPerson,
+    required this.user,
   });
 
   @override
+  State<PersonDetailScreen> createState() => _PersonDetailScreenState();
+}
+
+class _PersonDetailScreenState extends State<PersonDetailScreen> {
+  late Map<String, dynamic> _person;
+  late Future<List<Map<String, dynamic>>> _logsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _person = widget.adoredPerson;
+    _logsFuture = _loadLogs();
+  }
+
+  Future<List<Map<String, dynamic>>> _loadLogs() {
+    final id = _person['_id'];
+    if (id is ObjectId) {
+      return mongoService.fetchObservationLogsByPerson(id);
+    }
+    return Future.value(const []);
+  }
+
+  Map<String, String> _socialLinkMap() {
+    final links = _person['socialLinks'];
+    if (links is! List) return {};
+    final map = <String, String>{};
+    for (final link in links) {
+      if (link is Map<String, dynamic>) {
+        final type = link['type'];
+        final url = link['url'];
+        if (type is String && url is String) {
+          map[type] = url;
+        }
+      }
+    }
+    return map;
+  }
+
+  int _currentStreak() {
+    final stats = _person['stats'];
+    if (stats is Map<String, dynamic>) {
+      final value = stats['currentStreak'];
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      if (value != null) return int.tryParse(value.toString()) ?? 0;
+    }
+    return 0;
+  }
+
+  void _handleLinkTap(String platform, String url) {
+    debugPrint('$platform: $url');
+  }
+
+  Future<void> _refreshPerson() async {
+    final id = _person['_id'];
+    if (id is! ObjectId) return;
+    final updated = await mongoService.fetchAdoredPersonById(id);
+    if (updated != null && mounted) {
+      setState(() {
+        _person = updated;
+      });
+    }
+  }
+
+  Future<void> _openActivityLog() async {
+    final adoredPersonId = _person['_id'];
+    final userId = widget.user['_id'];
+    if (adoredPersonId is! ObjectId || userId is! ObjectId) return;
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ActivityLogScreen(
+          personName: _person['name']?.toString() ?? '이름 없음',
+          adoredPersonId: adoredPersonId,
+          userId: userId,
+        ),
+      ),
+    );
+
+    if (result == true) {
+      if (mounted) {
+        setState(() {
+          _logsFuture = _loadLogs();
+        });
+      }
+      await _refreshPerson();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final socialLinks = _socialLinkMap();
+    final name = _person['name']?.toString() ?? '이름 없음';
+    final profileImage = _person['profileImage'] as String?;
+    final streakDays = _currentStreak();
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -106,30 +196,35 @@ class PersonDetailScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Row(
                 children: [
-                  if (instagramUrl != null)
+                  if (socialLinks['instagram'] != null)
                     _SocialIcon(
                       iconPath: 'icons/instagram_icon.png',
-                      onTap: () {
-                        print('Instagram: $instagramUrl');
-                      },
+                      onTap: () => _handleLinkTap(
+                        'Instagram',
+                        socialLinks['instagram']!,
+                      ),
                     ),
-                  if (instagramUrl != null) const SizedBox(width: 12),
+                  if (socialLinks['instagram'] != null)
+                    const SizedBox(width: 12),
 
-                  if (githubUrl != null)
+                  if (socialLinks['github'] != null)
                     _SocialIcon(
                       iconPath: 'icons/github_icon.png',
-                      onTap: () {
-                        print('GitHub: $githubUrl');
-                      },
+                      onTap: () => _handleLinkTap(
+                        'GitHub',
+                        socialLinks['github']!,
+                      ),
                     ),
-                  if (githubUrl != null) const SizedBox(width: 12),
+                  if (socialLinks['github'] != null)
+                    const SizedBox(width: 12),
 
-                  if (linkUrl != null)
+                  if (socialLinks['link'] != null)
                     _SocialIcon(
                       iconPath: 'icons/link_icon.png',
-                      onTap: () {
-                        print('Link: $linkUrl');
-                      },
+                      onTap: () => _handleLinkTap(
+                        'Link',
+                        socialLinks['link']!,
+                      ),
                     ),
                 ],
               ),
@@ -191,20 +286,58 @@ class PersonDetailScreen extends StatelessWidget {
 
             // 관찰일지 리스트
             Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: const [
-                  ObservationCard(
-                    title: '사랑하는 사람',
-                    content: '토끼가 나무를 바라보고있다.토끼가 나무를 바라보고있...',
-                  ),
-                  SizedBox(height: 8),
-                  ObservationCard(
-                    title: '사랑하는 사람',
-                    content: '토끼가 나무를 바라보고있다.토끼가 나무를 바라보고있...',
-                  ),
-                  SizedBox(height: 16),
-                ],
+              child: FutureBuilder<List<Map<String, dynamic>>>(
+                future: _logsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Text(
+                        '관찰일지를 불러오지 못했습니다.',
+                        style: TextStyle(
+                          fontSize: AppFonts.bodyMedium,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    );
+                  }
+                  final logs = snapshot.data ?? [];
+                  if (logs.isEmpty) {
+                    return Center(
+                      child: Text(
+                        '아직 관찰일지가 없습니다.',
+                        style: TextStyle(
+                          fontSize: AppFonts.bodyMedium,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    );
+                  }
+                  return ListView.builder(
+                    padding: EdgeInsets.zero,
+                    itemCount: logs.length,
+                    itemBuilder: (context, index) {
+                      final log = logs[index];
+                      final dateValue = log['date'];
+                      DateTime? date;
+                      if (dateValue is DateTime) {
+                        date = dateValue;
+                      } else if (dateValue is String) {
+                        date = DateTime.tryParse(dateValue);
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12.0),
+                        child: ObservationCard(
+                          title: log['activity']?.toString() ?? '',
+                          content: log['thoughts']?.toString() ?? '',
+                          date: date,
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
             ),
 
@@ -213,14 +346,7 @@ class PersonDetailScreen extends StatelessWidget {
               padding: const EdgeInsets.all(24.0),
               child: Center(
                 child: _AddActivityLogButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ActivityLogScreen(personName: name),
-                      ),
-                    );
-                  },
+                  onPressed: _openActivityLog,
                 ),
               ),
             ),

@@ -2,50 +2,29 @@
 import 'package:flutter/material.dart';
 import '../core/theme/colors.dart';
 import '../core/theme/fonts.dart';
-import '../screens/person_detail_screen.dart';
+
+
 
 class PersonCard extends StatelessWidget {
   final String name;
   final String? profileImage;
   final int streakDays;
-  final bool hasInstagram;
-  final bool hasGithub;
-  final bool hasLink;
-  final String? instagramUrl;
-  final String? githubUrl;
-  final String? linkUrl;
+  final Map<String, String> socialLinks;
+  final VoidCallback? onTap;
 
   const PersonCard({
     super.key,
     required this.name,
     this.profileImage,
     this.streakDays = 0,
-    this.hasInstagram = false,
-    this.hasGithub = false,
-    this.hasLink = false,
-    this.instagramUrl,
-    this.githubUrl,
-    this.linkUrl,
+    this.socialLinks = const {},
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PersonDetailScreen(
-              name: name,
-              profileImage: profileImage,
-              streakDays: streakDays,
-              instagramUrl: instagramUrl,
-              githubUrl: githubUrl,
-              linkUrl: linkUrl,
-            ),
-          ),
-        );
-      },
+      onTap: onTap,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -105,20 +84,20 @@ class PersonCard extends StatelessWidget {
             // 소셜 미디어 아이콘들
             Row(
               children: [
-                if (hasInstagram)
-                  _SocialIconPlaceholder(
+                if (socialLinks.containsKey('instagram'))
+                  const _SocialIconPlaceholder(
                     iconPath: 'icons/instagram_icon.png',
                   ),
-                if (hasInstagram) const SizedBox(width: 12),
-
-                if (hasGithub)
-                  _SocialIconPlaceholder(
+                if (socialLinks.containsKey('instagram'))
+                  const SizedBox(width: 12),
+                if (socialLinks.containsKey('github'))
+                  const _SocialIconPlaceholder(
                     iconPath: 'icons/github_icon.png',
                   ),
-                if (hasGithub) const SizedBox(width: 12),
-
-                if (hasLink)
-                  _SocialIconPlaceholder(
+                if (socialLinks.containsKey('github'))
+                  const SizedBox(width: 12),
+                if (socialLinks.containsKey('link'))
+                  const _SocialIconPlaceholder(
                     iconPath: 'icons/link_icon.png',
                   ),
               ],
