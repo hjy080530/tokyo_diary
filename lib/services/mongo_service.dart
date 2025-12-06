@@ -38,22 +38,73 @@ class MongoService {
     _db = null;
   }
 
-  /// Example: fetch all adored persons for the given user id string.
-  Future<List<Map<String, dynamic>>> fetchAdoredPersons(String userId) async {
+  Future<List<Map<String, dynamic>>> fetchAdoredPersonsByUserId(
+    ObjectId userId,
+  ) async {
     await connect();
     final collection = adoredPersons;
     if (collection == null) return const [];
     return collection
-        .find({'userId': ObjectId.parse(userId)})
+        .find(where.eq('userId', userId).sortBy('createdAt', descending: true))
         .toList();
   }
 
-  /// Example: insert a raw observation log map.
-  Future<void> insertObservationLog(Map<String, dynamic> log) async {
+  Future<List<Map<String, dynamic>>> fetchObservationLogsByPerson(
+    ObjectId adoredPersonId,
+  ) async {
     await connect();
     final collection = observationLogs;
-    if (collection == null) return;
-    await collection.insertOne(log);
+    if (collection == null) return const [];
+    return collection
+        .find(where
+            .eq('adoredPersonId', adoredPersonId)
+            .sortBy('date', descending: true))
+        .toList();
+  }
+
+  Future<Map<String, dynamic>?> fetchAdoredPersonById(ObjectId id) async {
+    await connect();
+    final collection = adoredPersons;
+    if (collection == null) return null;
+    return collection.findOne(where.id(id));
+  }
+
+  Future<Map<String, dynamic>?> createObservationLog({
+    required ObjectId userId,
+    required ObjectId adoredPersonId,
+    required DateTime date,
+    required String activity,
+    required String thoughts,
+    List<String> tags = const [],
+  }) async {
+    await connect();
+    final collection = observationLogs;
+    if (collection == null) return null;
+
+    final doc = <String, dynamic>{
+      'userId': userId,
+      'adoredPersonId': adoredPersonId,
+      'date': date,
+      'activity': activity,
+      'thoughts': thoughts,
+      'tags': tags,
+      'createdAt': DateTime.now(),
+      'updatedAt': DateTime.now(),
+    };
+
+    await collection.insertOne(doc);
+
+    // update adored person stats basics
+    await adoredPersons?.updateOne(
+      where.id(adoredPersonId),
+      modify
+          .inc('stats.totalObservations', 1)
+          .set('stats.lastObservationDate', date)
+          .set('updatedAt', DateTime.now()),
+      upsert: false,
+    );
+
+    return doc;
   }
 
   /// Returns the user document for [email] if it exists.
@@ -94,6 +145,38 @@ class MongoService {
       'name': name,
       'email': email,
       'password': password,
+      'createdAt': now,
+      'updatedAt': now,
+    };
+
+    await collection.insertOne(doc);
+    return doc;
+  }
+
+  Future<Map<String, dynamic>?> createAdoredPerson({
+    required ObjectId userId,
+    required String name,
+    String? description,
+    String? profileImage,
+    List<Map<String, dynamic>> socialLinks = const [],
+  }) async {
+    await connect();
+    final collection = adoredPersons;
+    if (collection == null) return null;
+
+    final now = DateTime.now();
+    final doc = <String, dynamic>{
+      'userId': userId,
+      'name': name,
+      'description': description,
+      'profileImage': profileImage,
+      'socialLinks': socialLinks,
+      'stats': {
+        'totalObservations': 0,
+        'currentStreak': 0,
+        'longestStreak': 0,
+        'lastObservationDate': null,
+      },
       'createdAt': now,
       'updatedAt': now,
     };
