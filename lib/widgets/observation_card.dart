@@ -7,12 +7,14 @@ class ObservationCard extends StatelessWidget {
   final String title;
   final String content;
   final DateTime? date;
+  final List<String> tags;
 
   const ObservationCard({
     super.key,
     required this.title,
     required this.content,
     this.date,
+    this.tags = const [],
   });
 
   @override
@@ -66,6 +68,31 @@ class ObservationCard extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
+          if (tags.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: tags.map((tag) {
+                return Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    border: Border.all(color: AppColors.primary, width: 1.5),
+                  ),
+                  child: Text(
+                    tag,
+                    style: TextStyle(
+                      fontSize: AppFonts.bodySmall,
+                      color: AppColors.background,
+                      fontWeight: AppFonts.medium,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
         ],
       ),
     );

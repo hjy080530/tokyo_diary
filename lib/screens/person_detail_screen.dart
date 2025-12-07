@@ -838,6 +838,12 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                             title: log['activity']?.toString() ?? '',
                             content: log['thoughts']?.toString() ?? '',
                             date: date,
+                            tags: (log['tags'] is List)
+                                ? (log['tags'] as List)
+                                    .map((e) => e.toString())
+                                    .where((t) => t.isNotEmpty)
+                                    .toList()
+                                : const [],
                           ),
                         ),
                       );
