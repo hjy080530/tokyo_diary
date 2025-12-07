@@ -4,6 +4,7 @@ import 'package:mongo_dart/mongo_dart.dart' show ObjectId;
 
 import '../core/theme/colors.dart';
 import '../core/theme/fonts.dart';
+import '../services/gemini_service.dart';
 import '../services/mongo_service.dart';
 import '../services/notification_service.dart';
 import '../services/reminder_preferences.dart';
@@ -112,6 +113,97 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     }
   }
 
+  Future<void> _openFeedbackPicker() async {
+    List<Map<String, dynamic>> logs;
+    try {
+      logs = await _logsFuture;
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('관찰일지를 불러오지 못했습니다.')),
+      );
+      return;
+    }
+    if (!mounted) return;
+    if (logs.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('먼저 관찰일지를 작성해 주세요.')),
+      );
+      return;
+    }
+
+    await showModalBottomSheet<void>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        return SizedBox(
+          height: 400,
+          child: Column(
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '피드백 받을 기록 선택',
+                      style: TextStyle(
+                        fontSize: AppFonts.bodyMedium,
+                        fontWeight: AppFonts.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: logs.length,
+                  itemBuilder: (context, index) {
+                    final log = logs[index];
+                    final activity = log['activity']?.toString() ?? '내용 없음';
+                    final dateValue = log['date'];
+                    String dateLabel = '날짜 정보 없음';
+                    if (dateValue is DateTime) {
+                      dateLabel =
+                          '${dateValue.month}/${dateValue.day}';
+                    } else if (dateValue is String) {
+                      final parsed = DateTime.tryParse(dateValue);
+                      if (parsed != null) {
+                        dateLabel = '${parsed.month}/${parsed.day}';
+                      }
+                    }
+                    return ListTile(
+                      title: Text(
+                        activity,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(dateLabel),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        _openLogDetail(log);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _ensureDefaultReminder() async {
     final id = _person['_id'];
     if (id is! ObjectId) return;
@@ -148,6 +240,212 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
         time: settings.time,
       );
     }
+  }
+
+  Future<void> _openLogDetail(Map<String, dynamic> log) async {
+    final activity = log['activity']?.toString() ?? '';
+    final thoughts = log['thoughts']?.toString() ?? '';
+    final DateTime? date = () {
+      final value = log['date'];
+      if (value is DateTime) return value;
+      if (value is String) return DateTime.tryParse(value);
+      return null;
+    }();
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) {
+        String? feedback;
+        String? error;
+        bool loading = false;
+
+        Future<void> requestFeedback(StateSetter setModalState) async {
+          if (activity.isEmpty && thoughts.isEmpty) {
+            setModalState(() {
+              error = '활동과 감상이 모두 비어 있어요.';
+              feedback = null;
+            });
+            return;
+          }
+          setModalState(() {
+            loading = true;
+            error = null;
+          });
+          try {
+            final result = await geminiService.generateFeedback(
+              personName: _person['name']?.toString() ?? '이름 없음',
+              personActivity: activity,
+              userReflection: thoughts.isEmpty ? '미입력' : thoughts,
+            );
+            setModalState(() {
+              feedback = result;
+            });
+          } catch (e) {
+            setModalState(() {
+              error =
+                  e is GeminiException ? e.message : '피드백 요청에 실패했습니다.';
+              feedback = null;
+            });
+          } finally {
+            setModalState(() {
+              loading = false;
+            });
+          }
+        }
+
+        final dateLabel = date != null
+            ? '${date!.year}.${date!.month.toString().padLeft(2, '0')}.${date!.day.toString().padLeft(2, '0')}'
+            : null;
+
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 24,
+            left: 24,
+            right: 24,
+            top: 24,
+          ),
+          child: StatefulBuilder(
+            builder: (context, setModalState) {
+              return SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '관찰일지 상세',
+                          style: TextStyle(
+                            fontSize: AppFonts.bodyLarge,
+                            fontWeight: AppFonts.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(sheetContext),
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
+                    ),
+                    if (dateLabel != null) ...[
+                      Text(
+                        dateLabel,
+                        style: TextStyle(
+                          fontSize: AppFonts.bodySmall,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    Text(
+                      '오늘의 활동',
+                      style: TextStyle(
+                        fontSize: AppFonts.bodyMedium,
+                        fontWeight: AppFonts.semiBold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      activity.isEmpty ? '내용이 없습니다.' : activity,
+                      style: TextStyle(
+                        fontSize: AppFonts.bodyMedium,
+                        color: AppColors.textSecondary,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      '나의 감상',
+                      style: TextStyle(
+                        fontSize: AppFonts.bodyMedium,
+                        fontWeight: AppFonts.semiBold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      thoughts.isEmpty ? '감상이 작성되지 않았어요.' : thoughts,
+                      style: TextStyle(
+                        fontSize: AppFonts.bodyMedium,
+                        color: AppColors.textSecondary,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed:
+                            loading ? null : () => requestFeedback(setModalState),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                        ),
+                        icon: loading
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor:
+                                      AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
+                            : const Icon(Icons.auto_fix_high),
+                        label: Text(
+                          loading ? '피드백 생성 중...' : '제미나이 피드백 받기',
+                          style: TextStyle(
+                            fontSize: AppFonts.bodyMedium,
+                            fontWeight: AppFonts.semiBold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (error != null) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        error!,
+                        style: const TextStyle(
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                    if (feedback != null) ...[
+                      const SizedBox(height: 20),
+                      Text(
+                        'AI 피드백',
+                        style: TextStyle(
+                          fontSize: AppFonts.bodyMedium,
+                          fontWeight: AppFonts.semiBold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        feedback!,
+                        style: TextStyle(
+                          fontSize: AppFonts.bodyMedium,
+                          color: AppColors.textSecondary,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -321,13 +619,27 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
             // 나의 관찰일지
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Text(
-                '나의 관찰일지',
-                style: TextStyle(
-                  fontSize: AppFonts.bodyLarge,
-                  fontWeight: AppFonts.semiBold,
-                  color: AppColors.textPrimary,
-                ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '나의 관찰일지',
+                      style: TextStyle(
+                        fontSize: AppFonts.bodyLarge,
+                        fontWeight: AppFonts.semiBold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: _openFeedbackPicker,
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                    ),
+                    icon: const Icon(Icons.auto_fix_high),
+                    label: const Text('제미나이 피드백'),
+                  ),
+                ],
               ),
             ),
 
@@ -390,10 +702,14 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                       }
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12.0),
-                        child: ObservationCard(
-                          title: log['activity']?.toString() ?? '',
-                          content: log['thoughts']?.toString() ?? '',
-                          date: date,
+                        child: GestureDetector(
+                          onTap: () => _openLogDetail(log),
+                          behavior: HitTestBehavior.opaque,
+                          child: ObservationCard(
+                            title: log['activity']?.toString() ?? '',
+                            content: log['thoughts']?.toString() ?? '',
+                            date: date,
+                          ),
                         ),
                       );
                     },
