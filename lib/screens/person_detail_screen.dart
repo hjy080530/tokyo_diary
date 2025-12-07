@@ -411,8 +411,8 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                             borderRadius: BorderRadius.zero,
                           ),
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 14,
+                            horizontal: 24,
+                            vertical: 16,
                           ),
                         ),
                         icon: loading
@@ -665,7 +665,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '나의 관찰 기록',
+                    '나의 관찰 스트릭',
                     style: TextStyle(
                       fontSize: AppFonts.bodyLarge,
                       fontWeight: AppFonts.semiBold,
@@ -704,6 +704,10 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                       foregroundColor: AppColors.primary,
                       shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.zero,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
                       ),
                     ),
                     child: Row(

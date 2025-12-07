@@ -75,15 +75,18 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 60),
-              Text(
-                '懂慌日誌',
-                style: AppFonts.titleStyle,
+              SizedBox(
+                height: 48,
+                child: Image.asset(
+                  'assets/tokyo_diary_logo.png',
+                  fit: BoxFit.contain,
+                ),
               ),
               const SizedBox(height: 40),
               CustomInputField(
                 label: '이메일',
                 controller: _emailController,
-                placeholder: '이메일을 입력해주세요.',
+                placeholder: '이메일을 입력해주세요',
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 16),

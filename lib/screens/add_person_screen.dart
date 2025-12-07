@@ -18,6 +18,11 @@ class AddPersonScreen extends StatefulWidget {
 }
 
 class _AddPersonScreenState extends State<AddPersonScreen> {
+  static const String _disclaimerText =
+      '동경일기는 공개된 정보를 기반으로 개인의 학습과 성장을 돕기 위한 개인 일지 애플리케이션입니다. 본 서비스는 타인을 추적하거나 감시하는 목적으로 설계되지 않았으며 그러한 용도로 사용되어서는 안 됩니다.\n'
+      '사용자는 공개적으로 접근 가능한 정보만을 기록해야 하며, 기록된 모든 정보와 그 사용에 대한 법적, 윤리적 책임은 전적으로 사용자에게 있습니다. 관찰 대상자의 사생활, 초상권, 저작권 등 모든 권리를 존중해야 하며, 관찰 대상자에게 불편함이나 피해를 주는 행위는 금지됩니다. 본 애플리케이션은 스토킹, 사이버불링, 개인정보 불법 수집, 명예훼손, 저작권 침해 등 법령을 위반하는 목적으로 사용될 수 없습니다.\n'
+      '개발자는 사용자가 기록한 콘텐츠 및 사용자의 부적절한 사용으로 인한 법적 분쟁이나 손해에 대해 어떠한 책임도 지지 않습니다. 사용자는 본 서비스를 이용함으로써 위의 모든 조항을 이해하고 동의한 것으로 간주되며, 윤리적이고 합법적인 방식으로만 서비스를 사용할 책임이 있습니다.';
+
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
@@ -29,6 +34,7 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
     ),
   ];
   bool _isSaving = false;
+  bool _consentAccepted = false;
 
   @override
   void dispose() {
@@ -62,6 +68,78 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
 
   void _showMessage(String text) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  }
+
+  Future<bool?> _showConsentDialog() {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: AppColors.background,
+          title: Text(
+            '주의 문구',
+            style: TextStyle(
+              fontSize: AppFonts.bodyLarge,
+              fontWeight: AppFonts.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          content: SingleChildScrollView(
+            child: Text(
+              _disclaimerText,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: AppFonts.regular,
+                color: AppColors.textPrimary,
+                height: 1.4,
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text(
+                '취소',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: AppFonts.bodyMedium,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.zero,
+                ),
+              ),
+              child: Text(
+                '확인',
+                style: TextStyle(
+                  fontSize: AppFonts.bodyMedium,
+                  fontWeight: AppFonts.semiBold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _handleSaveTap() async {
+    if (_isSaving) return;
+    if (!_consentAccepted) {
+      final confirmed = await _showConsentDialog();
+      if (confirmed != true) return;
+      if (!mounted) return;
+      setState(() => _consentAccepted = true);
+    }
+    await _savePerson();
   }
 
   Future<void> _savePerson() async {
@@ -145,17 +223,6 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                     '당신의 동경대상은?',
                     style: TextStyle(
                       fontSize: 28,
-                      fontWeight: AppFonts.bold,
-                      color: AppColors.textPrimary,
-                      height: 1.3,
-                    ),
-                  ),
-                  Text(
-                    '동경일기는 공개된 정보를 기반으로 개인의 학습과 성장을 돕기 위한 개인 일지 애플리케이션입니다. 본 서비스는 타인을 추적하거나 감시하는 목적으로 설계되지 않았으며 그러한 용도로 사용되어서는 안 됩니다.\n'
-                    '사용자는 공개적으로 접근 가능한 정보만을 기록해야 하며, 기록된 모든 정보와 그 사용에 대한 법적, 윤리적 책임은 전적으로 사용자에게 있습니다. 관찰 대상자의 사생활, 초상권, 저작권 등 모든 권리를 존중해야 하며, 관찰 대상자에게 불편함이나 피해를 주는 행위는 금지됩니다. 본 애플리케이션은 스토킹, 사이버불링, 개인정보 불법 수집, 명예훼손, 저작권 침해 등 법령을 위반하는 목적으로 사용될 수 없습니다.\n'
-                    '개발자는 사용자가 기록한 콘텐츠 및 사용자의 부적절한 사용으로 인한 법적 분쟁이나 손해에 대해 어떠한 책임도 지지 않습니다. 사용자는 본 서비스를 이용함으로써 위의 모든 조항을 이해하고 동의한 것으로 간주되며, 윤리적이고 합법적인 방식으로만 서비스를 사용할 책임이 있습니다.',
-                    style: TextStyle(
-                      fontSize: 12,
                       fontWeight: AppFonts.bold,
                       color: AppColors.textPrimary,
                       height: 1.3,
@@ -262,11 +329,11 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 40),
                 ],
               ),
             ),
+
 
             // 동경인물 추가 버튼
             Padding(
@@ -275,7 +342,7 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: _isSaving ? null : _savePerson,
+                  onPressed: _isSaving ? null : _handleSaveTap,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,

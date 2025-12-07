@@ -126,6 +126,7 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
+                        color: AppColors.background,
                         border: Border.all(color: AppColors.primary, width: 2),
                       ),
                       child: Column(
@@ -184,7 +185,7 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
                               ),
                               decoration: BoxDecoration(
                                 color: _enabled
-                                    ? Colors.white
+                                    ? AppColors.background
                                     : Colors.grey.shade200,
                                 border: Border.all(color: AppColors.primary),
                               ),

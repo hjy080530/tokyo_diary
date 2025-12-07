@@ -106,15 +106,14 @@ class _MainScreenState extends State<MainScreen> {
               padding: const EdgeInsets.all(24.0),
               child: Row(
                 children: [
-                  Expanded(
-                    child: SizedBox(
-                      height: 40,
-                      child: Image.asset(
-                        'assets/tokyo_diary_logo.png',
-                        fit: BoxFit.contain,
-                      ),
+                  SizedBox(
+                    height: 40,
+                    child: Image.asset(
+                      'assets/tokyo_diary_logo.png',
+                      fit: BoxFit.contain,
                     ),
                   ),
+                  const Spacer(),
                   IconButton(
                     onPressed: _userId == null
                         ? null
