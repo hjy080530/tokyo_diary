@@ -150,6 +150,17 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                       height: 1.3,
                     ),
                   ),
+                  Text(
+                    '동경일기는 공개된 정보를 기반으로 개인의 학습과 성장을 돕기 위한 개인 일지 애플리케이션입니다. 본 서비스는 타인을 추적하거나 감시하는 목적으로 설계되지 않았으며 그러한 용도로 사용되어서는 안 됩니다.\n'
+                    '사용자는 공개적으로 접근 가능한 정보만을 기록해야 하며, 기록된 모든 정보와 그 사용에 대한 법적, 윤리적 책임은 전적으로 사용자에게 있습니다. 관찰 대상자의 사생활, 초상권, 저작권 등 모든 권리를 존중해야 하며, 관찰 대상자에게 불편함이나 피해를 주는 행위는 금지됩니다. 본 애플리케이션은 스토킹, 사이버불링, 개인정보 불법 수집, 명예훼손, 저작권 침해 등 법령을 위반하는 목적으로 사용될 수 없습니다.\n'
+                    '개발자는 사용자가 기록한 콘텐츠 및 사용자의 부적절한 사용으로 인한 법적 분쟁이나 손해에 대해 어떠한 책임도 지지 않습니다. 사용자는 본 서비스를 이용함으로써 위의 모든 조항을 이해하고 동의한 것으로 간주되며, 윤리적이고 합법적인 방식으로만 서비스를 사용할 책임이 있습니다.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: AppFonts.bold,
+                      color: AppColors.textPrimary,
+                      height: 1.3,
+                    ),
+                  ),
 
                   const SizedBox(height: 32),
 
@@ -206,7 +217,7 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                             : null,
                       ),
                     );
-                  }).toList(),
+                  }),
 
                   // 링크 추가 버튼
                   Center(
@@ -360,7 +371,7 @@ class _LinkInputRow extends StatelessWidget {
                 hintStyle: TextStyle(
                   fontSize: AppFonts.bodyMedium,
                   fontWeight: AppFonts.regular,
-                  color: AppColors.textSecondary.withOpacity(0.5),
+                  color: AppColors.textSecondary.withValues(alpha: 0.5),
                 ),
                 border: InputBorder.none,
               ),
