@@ -426,7 +426,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                                 ),
                               )
                             : Image.asset(
-                                'assets/gemini_logo.png',
+                                'assets/gemini_white_logo.png',
                                 width: 18,
                                 height: 18,
                               ),
