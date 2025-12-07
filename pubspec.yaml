@@ -71,6 +71,7 @@ flutter:
     - assets/icons/
     - assets/google_logo.png
     - assets/gemini_logo.png
+    - assets/gemini_white_logo.png
     - assets/tokyo_diary_logo.png
     - .env
 

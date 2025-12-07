@@ -81,6 +81,57 @@ class MongoService {
     final collection = observationLogs;
     if (collection == null) return null;
 
+    // Calculate streaks based on last observation date
+    int currentStreak = 0;
+    int longestStreak = 0;
+    DateTime? lastObservationDate;
+
+    final adored = await adoredPersons?.findOne(where.id(adoredPersonId));
+    if (adored != null) {
+      final stats = adored['stats'];
+      if (stats is Map<String, dynamic>) {
+        final rawCurrent = stats['currentStreak'];
+        final rawLongest = stats['longestStreak'];
+        currentStreak = rawCurrent is int
+            ? rawCurrent
+            : (rawCurrent is num ? rawCurrent.toInt() : 0);
+        longestStreak = rawLongest is int
+            ? rawLongest
+            : (rawLongest is num ? rawLongest.toInt() : 0);
+
+        final rawLast = stats['lastObservationDate'];
+        if (rawLast is DateTime) {
+          lastObservationDate = rawLast;
+        } else if (rawLast is String) {
+          lastObservationDate = DateTime.tryParse(rawLast);
+        }
+      }
+    }
+
+    final newDateOnly = DateTime(date.year, date.month, date.day);
+    int updatedStreak;
+    if (lastObservationDate == null) {
+      updatedStreak = 1;
+    } else {
+      final lastDateOnly = DateTime(
+        lastObservationDate.year,
+        lastObservationDate.month,
+        lastObservationDate.day,
+      );
+      final diffDays = newDateOnly.difference(lastDateOnly).inDays;
+      if (diffDays == 1) {
+        updatedStreak = currentStreak + 1;
+      } else if (diffDays == 0) {
+        // Same day entry keeps the current streak value.
+        updatedStreak = currentStreak;
+      } else {
+        updatedStreak = 1;
+      }
+    }
+    final updatedLongest = updatedStreak > longestStreak
+        ? updatedStreak
+        : longestStreak;
+
     final doc = <String, dynamic>{
       'userId': userId,
       'adoredPersonId': adoredPersonId,
@@ -99,6 +150,8 @@ class MongoService {
       where.id(adoredPersonId),
       modify
           .inc('stats.totalObservations', 1)
+          .set('stats.currentStreak', updatedStreak)
+          .set('stats.longestStreak', updatedLongest)
           .set('stats.lastObservationDate', date)
           .set('updatedAt', DateTime.now()),
       upsert: false,
