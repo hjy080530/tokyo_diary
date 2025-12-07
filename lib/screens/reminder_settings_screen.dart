@@ -177,22 +177,25 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
                           const SizedBox(height: 12),
                           GestureDetector(
                             onTap: _enabled ? _selectTime : null,
-                            child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 18,
-                              ),
-                              decoration: BoxDecoration(
-                                color: _enabled
-                                    ? AppColors.background
-                                    : Colors.grey.shade200,
-                                border: Border.all(color: AppColors.primary),
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 18,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _enabled
+                            ? AppColors.background
+                            : Colors.grey.shade200,
+                        border: Border.all(
+                          color: AppColors.primary,
+                          width: 2,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
+                        children: [
                                   Text(
                                     MaterialLocalizations.of(context)
                                         .formatTimeOfDay(_time),
@@ -219,16 +222,19 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
                     ),
                     const Spacer(),
                     SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: _saving ? null : _saveSettings,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                        ),
-                        child: _saving
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _saving ? null : _saveSettings,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.zero,
+                    ),
+                  ),
+                  child: _saving
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,

@@ -152,6 +152,8 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
 
     await showModalBottomSheet<void>(
       context: context,
+      isDismissible: false,
+      enableDrag: false,
       backgroundColor: AppColors.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.zero,
@@ -274,6 +276,8 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      isDismissible: false,
+      enableDrag: false,
       backgroundColor: AppColors.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.zero,

@@ -252,10 +252,6 @@ class _EditPersonScreenState extends State<EditPersonScreen> {
                         Container(
                           width: 18,
                           height: 18,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.white, width: 2),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
                           child: const Icon(
                             Icons.add,
                             size: 12,
