@@ -112,7 +112,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 label: '이메일',
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                placeholder: 'example@email.com',
+                placeholder: '이메일을 입력해주세요.',
               ),
               const SizedBox(height: 16),
               CustomInputField(

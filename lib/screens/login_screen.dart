@@ -83,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
               CustomInputField(
                 label: '이메일',
                 controller: _emailController,
-                placeholder: 'example@email.com',
+                placeholder: '이메일을 입력해주세요.',
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 16),
