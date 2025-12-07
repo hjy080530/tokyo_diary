@@ -142,7 +142,7 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                 children: [
                   // 제목
                   Text(
-                    '당신은 동경대상은?',
+                    '당신의 동경대상은?',
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: AppFonts.bold,
