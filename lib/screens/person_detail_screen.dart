@@ -10,6 +10,7 @@ import '../services/notification_service.dart';
 import '../services/reminder_preferences.dart';
 import '../widgets/observation_card.dart';
 import 'activity_log_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PersonDetailScreen extends StatefulWidget {
   final Map<String, dynamic> adoredPerson;
@@ -73,7 +74,22 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
   }
 
   void _handleLinkTap(String platform, String url) {
-    debugPrint('$platform: $url');
+    _launchExternalLink(url);
+  }
+
+  Future<void> _launchExternalLink(String? rawUrl) async {
+    if (rawUrl == null) return;
+    final trimmed = rawUrl.trim();
+    if (trimmed.isEmpty) return;
+    final normalized = trimmed.startsWith('http') ? trimmed : 'https://$trimmed';
+    final uri = Uri.tryParse(normalized);
+    if (uri == null) return;
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('링크를 열 수 없습니다.')),
+      );
+    }
   }
 
   Future<void> _refreshPerson() async {

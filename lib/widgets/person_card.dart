@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../core/theme/colors.dart';
 import '../core/theme/fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 
 
@@ -85,20 +86,23 @@ class PersonCard extends StatelessWidget {
             Row(
               children: [
                 if (socialLinks.containsKey('instagram'))
-                  const _SocialIconPlaceholder(
+                  _SocialIconButton(
                     iconPath: 'assets/icons/instagram_icon.png',
+                    url: socialLinks['instagram']!,
                   ),
                 if (socialLinks.containsKey('instagram'))
                   const SizedBox(width: 12),
                 if (socialLinks.containsKey('github'))
-                  const _SocialIconPlaceholder(
+                  _SocialIconButton(
                     iconPath: 'assets/icons/github_icon.png',
+                    url: socialLinks['github']!,
                   ),
                 if (socialLinks.containsKey('github'))
                   const SizedBox(width: 12),
                 if (socialLinks.containsKey('link'))
-                  const _SocialIconPlaceholder(
+                  _SocialIconButton(
                     iconPath: 'assets/icons/link_icon.png',
+                    url: socialLinks['link']!,
                   ),
               ],
             ),
@@ -109,25 +113,39 @@ class PersonCard extends StatelessWidget {
   }
 }
 
-class _SocialIconPlaceholder extends StatelessWidget {
+class _SocialIconButton extends StatelessWidget {
   final String iconPath;
+  final String url;
 
-  const _SocialIconPlaceholder({
+  const _SocialIconButton({
     required this.iconPath,
+    required this.url,
   });
+
+  Future<void> _launch() async {
+    final cleaned = url.trim();
+    if (cleaned.isEmpty) return;
+    final formatted = cleaned.startsWith('http') ? cleaned : 'https://$cleaned';
+    final uri = Uri.tryParse(formatted);
+    if (uri == null) return;
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 36,
-      height: 36,
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Image.asset(
-        iconPath,
-        fit: BoxFit.contain,
+    return GestureDetector(
+      onTap: _launch,
+      child: Container(
+        width: 36,
+        height: 36,
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Image.asset(
+          iconPath,
+          fit: BoxFit.contain,
+        ),
       ),
     );
   }
