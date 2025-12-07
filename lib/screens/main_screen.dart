@@ -24,14 +24,22 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   late Future<List<Map<String, dynamic>>> _adoredFuture;
   ObjectId? _userId;
+  late final String _userLabel;
+  String? _firstPersonName;
 
   @override
   void initState() {
     super.initState();
+    final name = widget.user['name']?.toString();
+    final email = widget.user['email']?.toString();
+    _userLabel = (name != null && name.isNotEmpty)
+        ? name
+        : (email != null && email.isNotEmpty ? email : '사용자');
     final userId = widget.user['_id'];
     if (userId is ObjectId) {
       _userId = userId;
       _adoredFuture = mongoService.fetchAdoredPersonsByUserId(userId);
+      _attachFirstPersonName(_adoredFuture);
     } else {
       _adoredFuture = Future.value(const []);
     }
@@ -42,6 +50,19 @@ class _MainScreenState extends State<MainScreen> {
     if (userId == null) return;
     setState(() {
       _adoredFuture = mongoService.fetchAdoredPersonsByUserId(userId);
+    });
+    _attachFirstPersonName(_adoredFuture);
+  }
+
+  void _attachFirstPersonName(Future<List<Map<String, dynamic>>> future) {
+    future.then((persons) {
+      if (!mounted) return;
+      final first = persons.isNotEmpty ? persons.first['name']?.toString() : null;
+      setState(() {
+        _firstPersonName = first != null && first.isNotEmpty ? first : null;
+      });
+    }).catchError((_) {
+      // ignore fetch errors here; handled in UI
     });
   }
 
@@ -118,7 +139,10 @@ class _MainScreenState extends State<MainScreen> {
             ),
 
             // 인사말 배너
-            const _GreetingBanner(),
+            _GreetingBanner(
+              userLabel: _userLabel,
+              highlightName: _firstPersonName,
+            ),
 
             const SizedBox(height: 32),
 
@@ -228,7 +252,13 @@ class _MainScreenState extends State<MainScreen> {
 }
 
 class _GreetingBanner extends StatefulWidget {
-  const _GreetingBanner();
+  final String userLabel;
+  final String? highlightName;
+
+  const _GreetingBanner({
+    required this.userLabel,
+    this.highlightName,
+  });
 
   @override
   State<_GreetingBanner> createState() => _GreetingBannerState();
@@ -272,7 +302,7 @@ class _GreetingBannerState extends State<_GreetingBanner> {
           color: const Color(0xFF2C3E50),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -299,8 +329,8 @@ class _GreetingBannerState extends State<_GreetingBanner> {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withOpacity(0.3),
-                      Colors.black.withOpacity(0.5),
+                      Colors.black.withValues(alpha: 0.3),
+                      Colors.black.withValues(alpha: 0.5),
                     ],
                   ),
                 ),
@@ -312,14 +342,14 @@ class _GreetingBannerState extends State<_GreetingBanner> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      '안녕하세요, 지영님!',
+                      '안녕하세요, ${widget.userLabel}님!',
                       style: TextStyle(
                         fontSize: AppFonts.bodyLarge,
                         fontWeight: AppFonts.bold,
                         color: Colors.white,
                         shadows: [
                           Shadow(
-                            color: Colors.black.withOpacity(0.5),
+                            color: Colors.black.withValues(alpha: 0.5),
                             offset: const Offset(0, 2),
                             blurRadius: 4,
                           ),
@@ -328,14 +358,14 @@ class _GreetingBannerState extends State<_GreetingBanner> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      '오늘의 ***님의 활동이 궁금하지 않으세요?',
+                      '오늘의 ${widget.highlightName ?? '동경대상'}님의 활동이 궁금하지 않으세요?',
                       style: TextStyle(
                         fontSize: AppFonts.bodyMedium,
                         fontWeight: AppFonts.medium,
                         color: Colors.white,
                         shadows: [
                           Shadow(
-                            color: Colors.black.withOpacity(0.5),
+                            color: Colors.black.withValues(alpha: 0.5),
                             offset: const Offset(0, 2),
                             blurRadius: 4,
                           ),
@@ -369,7 +399,7 @@ class _AddPersonButton extends StatelessWidget {
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           elevation: 3,
-          shadowColor: AppColors.primary.withOpacity(0.3),
+          shadowColor: AppColors.primary.withValues(alpha: 0.3),
           shape: RoundedRectangleBorder(
           ),
         ),

@@ -273,7 +273,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.zero,
       ),
@@ -406,9 +406,13 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
                           elevation: 3,
-                          shadowColor: AppColors.primary.withOpacity(0.3),
+                          shadowColor: AppColors.primary.withValues(alpha: 0.3),
                           shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.zero,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 14,
                           ),
                         ),
                         icon: loading
@@ -456,12 +460,48 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        feedback!,
-                        style: TextStyle(
-                          fontSize: AppFonts.bodyMedium,
-                          color: AppColors.textSecondary,
-                          height: 1.5,
+                      MarkdownBody(
+                        data: feedback!,
+                        styleSheet: MarkdownStyleSheet(
+                          p: TextStyle(
+                            fontSize: AppFonts.bodyMedium,
+                            color: AppColors.textSecondary,
+                            height: 1.5,
+                          ),
+                          strong: const TextStyle(
+                            fontWeight: AppFonts.semiBold,
+                            color: AppColors.textPrimary,
+                          ),
+                          blockquoteDecoration: BoxDecoration(
+                            color: AppColors.buttonBackground,
+                            border: Border(
+                              left: BorderSide(
+                                color: AppColors.primary,
+                                width: 3,
+                              ),
+                            ),
+                          ),
+                          blockquotePadding:
+                              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          h1: TextStyle(
+                            fontSize: AppFonts.bodyLarge,
+                            fontWeight: AppFonts.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                          h2: TextStyle(
+                            fontSize: AppFonts.bodyMedium,
+                            fontWeight: AppFonts.semiBold,
+                            color: AppColors.textPrimary,
+                          ),
+                          h3: TextStyle(
+                            fontSize: AppFonts.bodyMedium,
+                            fontWeight: AppFonts.semiBold,
+                            color: AppColors.textPrimary,
+                          ),
+                          listBullet: TextStyle(
+                            fontSize: AppFonts.bodyMedium,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       ),
                     ],
@@ -818,7 +858,7 @@ class _StreakBar extends StatelessWidget {
           child: Container(
             height: 40,
             decoration: BoxDecoration(
-              color: AppColors.buttonBorder.withOpacity(0.3),
+            color: AppColors.buttonBorder.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Stack(
@@ -869,7 +909,7 @@ class _AddActivityLogButton extends StatelessWidget {
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           elevation: 3,
-          shadowColor: AppColors.primary.withOpacity(0.3),
+          shadowColor: AppColors.primary.withValues(alpha: 0.3),
           shape: RoundedRectangleBorder(),
         ),
         child: Row(

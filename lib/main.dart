@@ -2,9 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'screens/login_screen.dart';
-import 'screens/main_screen.dart';
 import 'services/mongo_service.dart';
 import 'services/notification_service.dart';
+import 'core/theme/colors.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +29,28 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         fontFamily: 'NotoSansKR',
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.primary,
+          surface: AppColors.background,
+        ).copyWith(
+          primary: AppColors.primary,
+          onPrimary: Colors.white,
+          secondary: AppColors.primary,
+          onSecondary: Colors.white,
+          surface: AppColors.background,
+          onSurface: AppColors.textPrimary,
+        ),
+        scaffoldBackgroundColor: AppColors.background,
+        canvasColor: AppColors.background,
+        splashColor: AppColors.background,
+        highlightColor: AppColors.background,
+        hoverColor: AppColors.background,
+        focusColor: AppColors.background,
+        textSelectionTheme: const TextSelectionThemeData(
+          selectionColor: AppColors.background,
+          selectionHandleColor: AppColors.primary,
+          cursorColor: AppColors.primary,
+        ),
       ),
       home: const LoginScreen(),
     );
