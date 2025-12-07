@@ -1,5 +1,6 @@
 // lib/screens/person_detail_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:mongo_dart/mongo_dart.dart' show ObjectId;
 
 import '../core/theme/colors.dart';
@@ -150,8 +151,9 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
 
     await showModalBottomSheet<void>(
       context: context,
+      backgroundColor: AppColors.background,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.zero,
       ),
       builder: (ctx) {
         return SizedBox(
@@ -273,7 +275,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.zero,
       ),
       builder: (sheetContext) {
         String? feedback;
@@ -403,6 +405,11 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
+                          elevation: 3,
+                          shadowColor: AppColors.primary.withOpacity(0.3),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.zero,
+                          ),
                         ),
                         icon: loading
                             ? const SizedBox(
@@ -414,7 +421,11 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                                       AlwaysStoppedAnimation<Color>(Colors.white),
                                 ),
                               )
-                            : const Icon(Icons.auto_fix_high),
+                            : Image.asset(
+                                'assets/gemini_logo.png',
+                                width: 18,
+                                height: 18,
+                              ),
                         label: Text(
                           loading ? '피드백 생성 중...' : '제미나이 피드백 받기',
                           style: TextStyle(
@@ -647,13 +658,26 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                       ),
                     ),
                   ),
-                  TextButton.icon(
+                  TextButton(
                     onPressed: _openFeedbackPicker,
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.primary,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.zero,
+                      ),
                     ),
-                    icon: const Icon(Icons.auto_fix_high),
-                    label: const Text('제미나이 피드백'),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.asset(
+                          'assets/gemini_logo.png',
+                          width: 18,
+                          height: 18,
+                        ),
+                        const SizedBox(width: 6),
+                        const Text('제미나이 피드백'),
+                      ],
+                    ),
                   ),
                 ],
               ),
