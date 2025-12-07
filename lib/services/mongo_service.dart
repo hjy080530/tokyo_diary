@@ -237,6 +237,39 @@ class MongoService {
     await collection.insertOne(doc);
     return doc;
   }
+
+  Future<bool> updateAdoredPerson({
+    required ObjectId id,
+    String? name,
+    String? description,
+    String? profileImage,
+    List<Map<String, dynamic>>? socialLinks,
+  }) async {
+    await connect();
+    final collection = adoredPersons;
+    if (collection == null) return false;
+
+    final updateData = <String, dynamic>{};
+    if (name != null) updateData['name'] = name;
+    if (description != null) updateData['description'] = description;
+    if (profileImage != null) updateData['profileImage'] = profileImage;
+    if (socialLinks != null) updateData['socialLinks'] = socialLinks;
+
+    if (updateData.isEmpty) return true;
+
+    updateData['updatedAt'] = DateTime.now();
+
+    var builder = modify;
+    updateData.forEach((key, value) {
+      builder = builder.set(key, value);
+    });
+
+    final result = await collection.updateOne(
+      where.id(id),
+      builder,
+    );
+    return result.isSuccess;
+  }
 }
 
 /// Global singleton-like instance any widget can call to reuse the same Db

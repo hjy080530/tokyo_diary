@@ -11,6 +11,7 @@ import '../services/notification_service.dart';
 import '../services/reminder_preferences.dart';
 import '../widgets/observation_card.dart';
 import 'activity_log_screen.dart';
+import 'edit_person_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PersonDetailScreen extends StatefulWidget {
@@ -584,30 +585,59 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
 
                   const SizedBox(width: 20),
 
-                  // 이름 및 설명
+                  // 이름 및 설명 + 수정
                   Expanded(
-                    child: Column(
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          name,
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: AppFonts.bold,
-                            color: AppColors.textPrimary,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                name,
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: AppFonts.bold,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              if (description != null && description.isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                Text(
+                                  description,
+                                  style: TextStyle(
+                                    fontSize: AppFonts.bodyMedium,
+                                    fontWeight: AppFonts.regular,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                         ),
-                        if (description != null && description.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            description,
-                            style: TextStyle(
-                              fontSize: AppFonts.bodyMedium,
-                              fontWeight: AppFonts.regular,
-                              color: AppColors.textSecondary,
-                            ),
+                        IconButton(
+                          onPressed: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => EditPersonScreen(
+                                  adoredPerson: _person,
+                                ),
+                              ),
+                            );
+                            if (result == true) {
+                              await _refreshPerson();
+                            }
+                          },
+                          icon: const Icon(
+                            Icons.edit,
+                            size: 20,
+                            color: AppColors.primary,
                           ),
-                        ],
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
                       ],
                     ),
                   ),
@@ -642,6 +672,17 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                       ),
                     ),
                   if (socialLinks['github'] != null)
+                    const SizedBox(width: 12),
+
+                  if (socialLinks['velog'] != null)
+                    _SocialIcon(
+                      iconPath: 'assets/icons/velog_logo.jpg',
+                      onTap: () => _handleLinkTap(
+                        'Velog',
+                        socialLinks['velog']!,
+                      ),
+                    ),
+                  if (socialLinks['velog'] != null)
                     const SizedBox(width: 12),
 
                   if (socialLinks['link'] != null)
@@ -930,10 +971,6 @@ class _AddActivityLogButton extends StatelessWidget {
             Container(
               width: 20,
               height: 20,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.white, width: 2),
-                borderRadius: BorderRadius.circular(4),
-              ),
               child: const Icon(
                 Icons.add,
                 size: 14,

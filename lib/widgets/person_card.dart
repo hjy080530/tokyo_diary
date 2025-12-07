@@ -99,6 +99,13 @@ class PersonCard extends StatelessWidget {
                   ),
                 if (socialLinks.containsKey('github'))
                   const SizedBox(width: 12),
+                if (socialLinks.containsKey('velog'))
+                  _SocialIconButton(
+                    iconPath: 'assets/icons/velog_logo.jpg',
+                    url: socialLinks['velog']!,
+                  ),
+                if (socialLinks.containsKey('velog'))
+                  const SizedBox(width: 12),
                 if (socialLinks.containsKey('link'))
                   _SocialIconButton(
                     iconPath: 'assets/icons/link_icon.png',

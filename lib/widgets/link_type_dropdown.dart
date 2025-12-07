@@ -6,6 +6,7 @@ import '../core/theme/fonts.dart';
 enum LinkType {
   instagram('인스타그램', 'assets/icons/instagram_icon.png'),
   github('깃허브', 'assets/icons/github_icon.png'),
+  velog('벨로그', 'assets/icons/velog_logo.jpg'),
   link('링크', 'assets/icons/link_icon.png');
 
   const LinkType(this.displayName, this.iconPath);
@@ -20,6 +21,8 @@ extension LinkTypeKey on LinkType {
         return 'instagram';
       case LinkType.github:
         return 'github';
+      case LinkType.velog:
+        return 'velog';
       case LinkType.link:
         return 'link';
     }

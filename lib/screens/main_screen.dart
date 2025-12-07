@@ -416,10 +416,6 @@ class _AddPersonButton extends StatelessWidget {
             Container(
               width: 20,
               height: 20,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.white, width: 2),
-                borderRadius: BorderRadius.circular(4),
-              ),
               child: const Icon(
                 Icons.add,
                 size: 14,
