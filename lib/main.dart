@@ -1,6 +1,7 @@
 // lib/main.dart 업데이트
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'screens/login_screen.dart';
 import 'services/mongo_service.dart';
 import 'services/notification_service.dart';
@@ -15,7 +16,7 @@ Future<void> main() async {
     debugPrint('Mongo init failed: $e');
   }
   await notificationService.init();
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {

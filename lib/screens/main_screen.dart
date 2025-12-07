@@ -2,6 +2,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mongo_dart/mongo_dart.dart' show ObjectId;
 
 import '../core/theme/colors.dart';
@@ -12,59 +13,14 @@ import 'add_person_screen.dart';
 import 'person_detail_screen.dart';
 import 'reminder_overview_screen.dart';
 
-class MainScreen extends StatefulWidget {
+final adoredPersonsProvider = FutureProvider.family<List<Map<String, dynamic>>, ObjectId>((ref, userId) {
+  return mongoService.fetchAdoredPersonsByUserId(userId);
+});
+
+class MainScreen extends ConsumerWidget {
   final Map<String, dynamic> user;
 
   const MainScreen({super.key, required this.user});
-
-  @override
-  State<MainScreen> createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> {
-  late Future<List<Map<String, dynamic>>> _adoredFuture;
-  ObjectId? _userId;
-  late final String _userLabel;
-  String? _firstPersonName;
-
-  @override
-  void initState() {
-    super.initState();
-    final name = widget.user['name']?.toString();
-    final email = widget.user['email']?.toString();
-    _userLabel = (name != null && name.isNotEmpty)
-        ? name
-        : (email != null && email.isNotEmpty ? email : '사용자');
-    final userId = widget.user['_id'];
-    if (userId is ObjectId) {
-      _userId = userId;
-      _adoredFuture = mongoService.fetchAdoredPersonsByUserId(userId);
-      _attachFirstPersonName(_adoredFuture);
-    } else {
-      _adoredFuture = Future.value(const []);
-    }
-  }
-
-  void _refreshAdoredPersons() {
-    final userId = _userId;
-    if (userId == null) return;
-    setState(() {
-      _adoredFuture = mongoService.fetchAdoredPersonsByUserId(userId);
-    });
-    _attachFirstPersonName(_adoredFuture);
-  }
-
-  void _attachFirstPersonName(Future<List<Map<String, dynamic>>> future) {
-    future.then((persons) {
-      if (!mounted) return;
-      final first = persons.isNotEmpty ? persons.first['name']?.toString() : null;
-      setState(() {
-        _firstPersonName = first != null && first.isNotEmpty ? first : null;
-      });
-    }).catchError((_) {
-      // ignore fetch errors here; handled in UI
-    });
-  }
 
   Map<String, String> _socialLinkMap(List<dynamic>? links) {
     if (links == null) return {};
@@ -94,7 +50,27 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userIdRaw = user['_id'];
+    final userId = userIdRaw is ObjectId ? userIdRaw : null;
+    final name = user['name']?.toString();
+    final email = user['email']?.toString();
+    final userLabel =
+        (name != null && name.isNotEmpty) ? name : (email ?? '사용자');
+    final adoredAsync = userId == null
+        ? const AsyncValue.data(<Map<String, dynamic>>[])
+        : ref.watch(adoredPersonsProvider(userId));
+
+    String? highlightName;
+    adoredAsync.whenData((list) {
+      if (list.isNotEmpty) {
+        final first = list.first['name']?.toString();
+        if (first != null && first.isNotEmpty) {
+          highlightName = first;
+        }
+      }
+    });
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -114,133 +90,125 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                   ),
                   const Spacer(),
-                  IconButton(
-                    onPressed: _userId == null
-                        ? null
-                        : () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => ReminderOverviewScreen(
-                                  userId: _userId!,
-                                ),
-                              ),
-                            );
-                          },
-                    icon: Icon(
-                      Icons.alarm,
-                      color: _userId == null
-                          ? AppColors.textSecondary
-                          : AppColors.primary,
-                    ),
-                  ),
+          IconButton(
+            onPressed: userId == null
+                ? null
+                : () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => ReminderOverviewScreen(
+                          userId: userId,
+                        ),
+                      ),
+                    );
+                  },
+            icon: Icon(
+              Icons.alarm,
+              color: userId == null
+                  ? AppColors.textSecondary
+                  : AppColors.primary,
+            ),
+          ),
                 ],
               ),
             ),
 
             // 인사말 배너
             _GreetingBanner(
-              userLabel: _userLabel,
-              highlightName: _firstPersonName,
+              userLabel: userLabel,
+              highlightName: highlightName,
             ),
 
             const SizedBox(height: 32),
 
             // 나의 동경대상 섹션
             Expanded(
-              child: FutureBuilder<List<Map<String, dynamic>>>(
-                future: _adoredFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (snapshot.hasError) {
-                    return Center(
+              child: adoredAsync.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (_, __) => Center(
+                  child: Text(
+                    '동경대상을 불러오지 못했습니다.',
+                    style: TextStyle(
+                      fontSize: AppFonts.bodyMedium,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                data: (persons) => ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24.0),
                       child: Text(
-                        '동경대상을 불러오지 못했습니다.',
+                        '나의 동경대상',
                         style: TextStyle(
-                          fontSize: AppFonts.bodyMedium,
+                          fontSize: AppFonts.bodyLarge,
+                          fontWeight: AppFonts.semiBold,
                           color: AppColors.textPrimary,
                         ),
                       ),
-                    );
-                  }
-                  final persons = snapshot.data ?? [];
-                  return ListView(
-                    padding: EdgeInsets.zero,
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 24.0),
-                        child: Text(
-                          '나의 동경대상',
-                          style: TextStyle(
-                            fontSize: AppFonts.bodyLarge,
-                            fontWeight: AppFonts.semiBold,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
+                    ),
+                    const SizedBox(height: 16),
                       Container(
                         width: double.infinity,
                         height: 2,
                         color: AppColors.primary,
                       ),
-                      const SizedBox(height: 16),
-                      if (persons.isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                          child: Text(
-                            '아직 등록된 동경대상이 없습니다. 추가해 보세요!',
-                            style: TextStyle(
-                              fontSize: AppFonts.bodyMedium,
-                              color: AppColors.textSecondary,
-                            ),
+                    const SizedBox(height: 16),
+                    if (persons.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: Text(
+                          '아직 등록된 동경대상이 없습니다. 추가해 보세요!',
+                          style: TextStyle(
+                            fontSize: AppFonts.bodyMedium,
+                            color: AppColors.textSecondary,
                           ),
                         ),
-                      for (final person in persons) ...[
-                        PersonCard(
-                          name: person['name']?.toString() ?? '이름 없음',
-                          profileImage: person['profileImage'] as String?,
-                          streakDays: _currentStreakFrom(person['stats']),
-                          socialLinks:
-                              _socialLinkMap(person['socialLinks'] as List?),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => PersonDetailScreen(
-                                  adoredPerson: person,
-                                  user: widget.user,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                      const SizedBox(height: 40),
-                      Center(
-                        child: _AddPersonButton(
-                          onPressed: _userId == null
-                              ? null
-                              : () async {
-                                  final result = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          AddPersonScreen(userId: _userId!),
-                                    ),
-                                  );
-                                  if (result == true) {
-                                    _refreshAdoredPersons();
-                                  }
-                                },
-                        ),
                       ),
-                      const SizedBox(height: 40),
+                    for (final person in persons) ...[
+                      PersonCard(
+                        name: person['name']?.toString() ?? '이름 없음',
+                        profileImage: person['profileImage'] as String?,
+                        streakDays: _currentStreakFrom(person['stats']),
+                        socialLinks:
+                            _socialLinkMap(person['socialLinks'] as List?),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => PersonDetailScreen(
+                                adoredPerson: person,
+                                user: user,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 16),
                     ],
-                  );
-                },
+                    const SizedBox(height: 40),
+                    Center(
+                    child: _AddPersonButton(
+                        onPressed: userId == null
+                            ? null
+                            : () async {
+                                final result = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        AddPersonScreen(userId: userId),
+                                  ),
+                                );
+                                if (result == true) {
+                                  ref.invalidate(adoredPersonsProvider(userId));
+                                }
+                              },
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                  ],
+                ),
               ),
             ),
           ],

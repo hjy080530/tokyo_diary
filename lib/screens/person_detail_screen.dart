@@ -48,6 +48,16 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     return Future.value(const []);
   }
 
+  DateTime? _parseLogDate(dynamic value) {
+    DateTime? date;
+    if (value is DateTime) {
+      date = value;
+    } else if (value is String) {
+      date = DateTime.tryParse(value);
+    }
+    return date?.toLocal();
+  }
+
   Map<String, String> _socialLinkMap() {
     final links = _person['socialLinks'];
     if (links is! List) return {};
@@ -266,12 +276,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
   Future<void> _openLogDetail(Map<String, dynamic> log) async {
     final activity = log['activity']?.toString() ?? '';
     final thoughts = log['thoughts']?.toString() ?? '';
-    final DateTime? date = () {
-      final value = log['date'];
-      if (value is DateTime) return value;
-      if (value is String) return DateTime.tryParse(value);
-      return null;
-    }();
+    final DateTime? date = _parseLogDate(log['date']);
 
     await showModalBottomSheet<void>(
       context: context,
@@ -822,13 +827,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                     itemCount: logs.length,
                     itemBuilder: (context, index) {
                       final log = logs[index];
-                      final dateValue = log['date'];
-                      DateTime? date;
-                      if (dateValue is DateTime) {
-                        date = dateValue;
-                      } else if (dateValue is String) {
-                        date = DateTime.tryParse(dateValue);
-                      }
+                      final date = _parseLogDate(log['date']);
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12.0),
                         child: GestureDetector(
